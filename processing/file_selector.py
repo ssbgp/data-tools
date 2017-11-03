@@ -1,13 +1,14 @@
+from abc import abstractmethod, ABC
 from pathlib import Path
 
 
-# Interface
-class FileSelector:
+class FileSelector(ABC):
     """
     File selectors are responsible for selecting data files.
     The implementation specifies how and which files are selected.
     """
 
+    @abstractmethod
     def select(self, directory: Path) -> list:
         """
         Selects data files from the specified directory.

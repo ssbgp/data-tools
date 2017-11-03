@@ -1,11 +1,14 @@
-# Interface
-class DataLoader:
+from abc import abstractmethod, ABC
+
+
+class DataLoader(ABC):
     """
     Data loaders are responsible for loading the data from the data files.
     The implementation specifies what data is collected and how is it stored
     in memory or other even on disk.
     """
 
+    @abstractmethod
     def load(self, data_files: list):
         """
         Loads data from the specified data files. It returns a data structure
