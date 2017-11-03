@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from pathlib import Path
+from processing.file_collection import FileCollection
 
 
 class FileSelector(ABC):
@@ -9,10 +9,10 @@ class FileSelector(ABC):
     """
 
     @abstractmethod
-    def select(self, directory: Path) -> list:
+    def select(self, files: FileCollection) -> list:
         """
-        Selects data files from the specified directory.
+        Selects specific data files from a file a collection.
 
-        :param directory: path to directory to look for data files
-        :return: list containing all data files selected
+        :param files: collection of file to select from
+        :return: list containing a paths corresponding to selected data files
         """
