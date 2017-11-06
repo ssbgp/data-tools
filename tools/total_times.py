@@ -3,7 +3,7 @@ SS-BGP Data Tools: Total Times
 
 Usage:
   plot-total-times [ --bgp=<bgp_dir> --ssbgp=<ssbgp_dir> --ssbgp2=<ssbgp2_dir ]
-                   [ -v | --verbose ]
+                   [ -v | --verbose ] [ --out=<output> ]
   plot-total-times (-h | --help)
 
 Options:
@@ -53,6 +53,8 @@ def main():
     ssbgp_directory = get_directory(args, '--ssbgp')
     ssbgp2_directory = get_directory(args, '--ssbgp2')
 
+    output_file = "plot.html" if not args['--out'] else args['--out']
+
     Application(
         container=LabeledFileContainer(
             directories={
@@ -63,7 +65,8 @@ def main():
         ),
         selector=BasicFileSelector(),
         loader=TotalTimesLoader(),
-        processor=TotalTimesProcessor(print_results=args['--verbose'])
+        processor=TotalTimesProcessor(output_file,
+                                      print_results=args['--verbose'])
     ).run()
 
 
