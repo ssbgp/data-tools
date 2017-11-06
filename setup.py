@@ -11,4 +11,10 @@ setup(
     author_email='fialho.david@protonmail.com',
 
     packages=find_packages(),
+
+    entry_points={
+        'console_scripts': [
+            'plot-total-times=tools.total_times:main',
+        ],
+    }
 )
