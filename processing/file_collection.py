@@ -3,18 +3,10 @@ from collections import Iterable
 
 
 class FileCollection(Iterable):
-    """ Abstraction to hold multiple files """
+    """
+    Abstraction of a data structure to hold multiple files (paths to files).
+    """
 
     @abstractmethod
     def __iter__(self):
-        pass
-
-    @abstractmethod
-    def glob(self, pattern: str):
-        """
-        Iterate over the files and yield all existing files (of any kind,
-        including directories) matching the given pattern.
-
-        :param pattern: pattern to match files to
-        """
-        pass
+        """ Returns an iterator to iterate over each file in the collection """
