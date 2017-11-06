@@ -15,6 +15,7 @@ setup(
     entry_points={
         'console_scripts': [
             'plot-total-times=tools.total_times:main',
+            'plot-avg-times=tools.avg_times:main',
         ],
     }
 )
