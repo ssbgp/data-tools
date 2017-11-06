@@ -3,11 +3,13 @@ SS-BGP Data Tools: Total Times
 
 Usage:
   plot-total-times [ --bgp=<bgp_dir> --ssbgp=<ssbgp_dir> --ssbgp2=<ssbgp2_dir ]
+                   [ -v | --verbose ]
   plot-total-times (-h | --help)
 
 Options:
   -h --help      Show this screen.
   -V --version   Show version.
+  -v --verbose   Print results.
 
 """
 import csv
@@ -61,7 +63,7 @@ def main():
         ),
         selector=BasicFileSelector(),
         loader=TotalTimesLoader(),
-        processor=TotalTimesProcessor()
+        processor=TotalTimesProcessor(print_results=args['--verbose'])
     ).run()
 
 
