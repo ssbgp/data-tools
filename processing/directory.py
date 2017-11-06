@@ -1,13 +1,10 @@
 from pathlib import Path
 
-from processing.file_collection import FileCollection
+from processing.file_container import FileContainer
 
 
-class DirectoryFileCollection(FileCollection):
-    """
-    File collection to abstract a directory. It obtains its files from an
-    existing directory.
-    """
+class Directory(FileContainer):
+    """ File container based on a single directory. """
 
     def __init__(self, directory: Path):
         self.directory = directory
@@ -17,3 +14,7 @@ class DirectoryFileCollection(FileCollection):
 
     def glob(self, pattern: str):
         return self.directory.glob(pattern)
+
+    @property
+    def path(self) -> Path:
+        return self.directory
