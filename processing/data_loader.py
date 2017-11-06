@@ -1,5 +1,7 @@
 from abc import abstractmethod, ABC
 
+from processing.file_collection import FileCollection
+
 
 class DataLoader(ABC):
     """
@@ -9,7 +11,7 @@ class DataLoader(ABC):
     """
 
     @abstractmethod
-    def load(self, data_files: list):
+    def load(self, data_files: FileCollection):
         """
         Loads data from the specified data files. It returns a data structure
         holding the data. The type of structure returned is completely dependent
