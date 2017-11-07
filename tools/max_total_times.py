@@ -18,9 +18,9 @@ from collections import defaultdict
 from docopt import docopt
 
 from processing.application import Application
-from processing.basic_file_selector import BasicFileSelector
 from processing.data_classes import Protocol
 from processing.data_loader import DataLoader
+from processing.extension_selector import ExtensionFileSelector
 from processing.labeled_file_collection import LabeledFileCollection
 from processing.labeled_file_container import LabeledFileContainer
 from tools.total_times_utils import TotalTimesProcessor
@@ -67,7 +67,7 @@ def main():
                 ssbgp2_directory: Protocol.SSBGP2,
             }
         ),
-        selector=BasicFileSelector(),
+        selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=MaxTotalTimesLoader(),
         processor=TotalTimesProcessor(output_file,
                                       print_results=args['--verbose'])

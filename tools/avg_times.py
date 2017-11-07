@@ -21,11 +21,11 @@ from docopt import docopt
 from plotly.graph_objs import Scatter
 
 from processing.application import Application
-from processing.basic_file_selector import BasicFileSelector
 from processing.data_classes import Protocol
 from processing.data_loader import DataLoader
 from processing.data_processor import DataProcessor
 from processing.directory import Directory, EmptyDirectory
+from processing.extension_selector import ExtensionFileSelector
 from processing.labeled_file_collection import LabeledFileCollection
 from processing.labeled_file_container import LabeledFileContainer
 from tools.utils import print_error
@@ -114,7 +114,7 @@ def main():
                 ssbgp2_directory: Protocol.SSBGP2,
             }
         ),
-        selector=BasicFileSelector(),
+        selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=AvgTimesLoader(),
         processor=AvgTimesProcessor()
     ).run()
