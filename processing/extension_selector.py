@@ -17,7 +17,7 @@ class ExtensionFileSelector(FileSelector):
 
         if isinstance(files, LabeledFileContainer):
             data_files = LabeledFileCollection()
-            for label, file in files.glob_by_label(self._pattern):
+            for file, label in files.glob_by_label(self._pattern):
                 data_files.add(file, label)
 
             return data_files
