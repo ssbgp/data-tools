@@ -14,6 +14,9 @@ class Application:
         self.processor = processor
 
     def run(self):
+        print("Selecting files...")
         data_files = self.selector.select(self.container)
+        print("Loading data...")
         data = self.loader.load(data_files)
+        print("Processing...")
         self.processor.process(data)
