@@ -18,6 +18,13 @@ class LabeledFileCollection(FileCollection):
         """ Adds a new file to the collection with the specified label """
         self._files[label].append(file)
 
+    def __len__(self):
+        count = 0
+        for _, files in self._files.items():
+            count += len(files)
+
+        return count
+
     def __iter__(self):
         def iterator(files: dict):
             for file_list in files.values():
@@ -32,7 +39,7 @@ class LabeledFileCollection(FileCollection):
 
     def labels(self):
         """ Returns list with the labels available """
-        return list(self._files.keys())
+        return self._files
 
     def iter_by_label(self):
         """
