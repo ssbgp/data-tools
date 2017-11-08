@@ -10,7 +10,6 @@ Options:
   -V --version   Show version.
 
 """
-import csv
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -39,16 +38,7 @@ class AvgTimesLoader(DataLoader):
     """
 
     def load(self, data_files: LabeledFileCollection):
-        # Container where data will be loaded to
-        avg_times = defaultdict(list)
-        for protocol, data_file in data_files.iter_by_label():
-            # Open the file as a CSV file
-            with open(data_file) as file:
-                for row in csv.DictReader(file, delimiter=";"):
-                    avg_time = float(row["Termination Time (Avg.)"])
-                    avg_times[protocol].append(avg_time)
-
-        return avg_times
+        return data_files
 
 
 class AvgTimesProcessor(DataProcessor):
@@ -63,23 +53,45 @@ class AvgTimesProcessor(DataProcessor):
         Protocol.SSBGP2: "SS-BGP2",
     }
 
-    def process(self, data: dict):
+    def process(self, data_files: LabeledFileCollection):
+
+        min_bin = 0
+        max_bin = 2001000
+        bin_step = 100
+
+        bins = [i for i in range(min_bin, max_bin, bin_step)]
+        value_counts = defaultdict(int)
+        histograms = {}
+
+        for protocol in data_files.labels():
+            histograms[protocol] = [0] * (len(bins) - 1)
+
+        file_count = len(data_files)
+        file_n = 1
+        for data_file, protocol in data_files.iter_by_label():
+            print(f"\r  histogram:  file {file_n}/{file_count}", end="")
+            file_n += 1
+
+            # Open the file as a CSV file
+            with open(data_file) as file:
+                for value in map(int, file.readlines()):
+                    histograms[protocol][int(value / bin_step)] += 1
+                    value_counts[protocol] += 1
+
         scatters = []
-        for protocol, values in data.items():
-            count = len(values)
-            hist, bin_edges = np.histogram(values, bins=range(0, 2001000, 100))
+        for protocol, hist in histograms.items():
+            value_count = value_counts[protocol]
             cumsum = np.cumsum(hist)
-            cumsum = [(count - value) / count for value in cumsum]
+            cumsum = [(value_count - value) / value_count for value in cumsum]
 
             print(protocol)
             print("----------------------")
-            print("data:", values)
-            print("bins:", bin_edges)
+            print("bins:", bins)
             print("hist:", hist)
             print("cum:", cumsum)
             print()
 
-            scatters.append(Scatter(x=bin_edges, y=cumsum,
+            scatters.append(Scatter(x=bins, y=cumsum,
                                     name=self.protocol_labels[protocol]))
 
         py.plot(scatters, filename="file.html", auto_open=False)
@@ -114,7 +126,7 @@ def main():
                 ssbgp2_directory: Protocol.SSBGP2,
             }
         ),
-        selector=ExtensionFileSelector(extension=".basic.csv"),
+        selector=ExtensionFileSelector(extension=".times.csv"),
         loader=AvgTimesLoader(),
         processor=AvgTimesProcessor()
     ).run()
