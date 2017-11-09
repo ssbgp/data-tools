@@ -2,12 +2,14 @@
 SS-BGP Data Tools: Avg Times
 
 Usage:
-  plot-avg-times [ --bgp=<bgp_dir> --ssbgp=<ssbgp_dir> --ssbgp2=<ssbgp2_dir ]
+  plot-avg-times [ --bgp=<bgp_dir> --ssbgp=<ssbgp_dir> --ssbgp2=<ssbgp2_dir> ]
+                 [ -v | --verbose ] [ --out=<output> ]
   plot-avg-times (-h | --help)
 
 Options:
   -h --help      Show this screen.
   -V --version   Show version.
+  -v --verbose   Print results.
 
 """
 import sys
@@ -47,6 +49,10 @@ class AvgTimesProcessor(DataProcessor):
     average times of each simulation in the data set.
     """
 
+    def __init__(self, output_file, print_results):
+        self._output_file = output_file
+        self._print_results = print_results
+
     protocol_labels = {
         Protocol.BGP: "BGP",
         Protocol.SSBGP: "SSBGP",
@@ -84,17 +90,18 @@ class AvgTimesProcessor(DataProcessor):
             cumsum = np.cumsum(hist)
             cumsum = [(value_count - value) / value_count for value in cumsum]
 
-            print(protocol)
-            print("----------------------")
-            print("bins:", bins)
-            print("hist:", hist)
-            print("cum:", cumsum)
-            print()
+            if self._print_results:
+                print(protocol)
+                print("----------------------")
+                print("bins:", bins)
+                print("hist:", hist)
+                print("cum:", cumsum)
+                print()
 
             scatters.append(Scatter(x=bins, y=cumsum,
                                     name=self.protocol_labels[protocol]))
 
-        py.plot(scatters, filename="file.html", auto_open=False)
+        py.plot(scatters, filename=self._output_file, auto_open=False)
 
 
 def get_directory(args: dict, key: str):
@@ -118,6 +125,8 @@ def main():
     ssbgp_directory = get_directory(args, '--ssbgp')
     ssbgp2_directory = get_directory(args, '--ssbgp2')
 
+    output_file = "plot.html" if not args['--out'] else args['--out']
+
     Application(
         container=LabeledFileContainer(
             directories={
@@ -128,7 +137,8 @@ def main():
         ),
         selector=ExtensionFileSelector(extension=".times.csv"),
         loader=AvgTimesLoader(),
-        processor=AvgTimesProcessor()
+        processor=AvgTimesProcessor(output_file,
+                                    print_results=args['--verbose'])
     ).run()
 
 
