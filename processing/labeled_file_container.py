@@ -1,3 +1,6 @@
+from typing import Dict
+
+from processing.directory import Directory
 from processing.file_container import FileContainer
 
 
@@ -7,7 +10,7 @@ class LabeledFileContainer(FileContainer):
     provides methods to access the files using the corresponding label.
     """
 
-    def __init__(self, directories: dict):
+    def __init__(self, directories: Dict[str, Directory]):
         self._directories = directories
 
     def __iter__(self):
@@ -23,6 +26,7 @@ class LabeledFileContainer(FileContainer):
         Returns iterator that iterates over each file and its corresponding
         label.
         """
+
         def iterator(directories: dict):
             """ Yields each file and its corresponding label """
             for directory, label in directories.items():
@@ -43,6 +47,6 @@ class LabeledFileContainer(FileContainer):
         def iterator(directories, pattern):
             for directory, label in directories:
                 for file in directory.glob(pattern):
-                    yield file, label
+                    yield label, file
 
         return iterator(self._directories.items(), pattern)

@@ -51,6 +51,6 @@ class LabeledFileCollection(FileCollection):
             """ Yields each file and its corresponding label """
             for label, file_list in files.items():
                 for file in file_list:
-                    yield file, label
+                    yield label, file
 
         return iterator(self._files)
