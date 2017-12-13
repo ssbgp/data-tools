@@ -15,23 +15,20 @@ import json
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import List, Dict, NamedTuple, NewType, Union
+from typing import List, Dict, NamedTuple
 
 import numpy as np
-import plotly.offline as plotly
 from docopt import docopt
-from plotly.exceptions import PlotlyDictKeyError
-from plotly.graph_objs import Scatter
 
 from processing.application import Application
 from processing.data_loader import DataLoader
 from processing.data_processor import DataProcessor
 from processing.directory import Directory
-from processing.errors import ProcessingError
 from processing.extension_selector import ExtensionFileSelector
 from processing.files import open_csv
 from processing.labeled_file_collection import LabeledFileCollection
 from processing.labeled_file_container import LabeledFileContainer
+from processing.plotter import Plotter, TraceLine, TraceData
 from tools.utils import print_error
 
 
@@ -58,30 +55,20 @@ class TerminationTimesLoader(DataLoader):
         return termination_times
 
 
-TraceLine = NewType('TraceLine', Dict[str, Union[str, int]])
-
-
 class Trace(NamedTuple):
     label: str
     data_dir: Directory
     line: TraceLine = {}
 
 
-class TraceData(NamedTuple):
-    label: str
-    x: List[int]
-    y: List[float]
-
-
-class TerminationTimesPlotter(DataProcessor):
+class TerminationTimesProcessor(DataProcessor):
     """
     Expects a list of integer values. These integer values should represent the
     total times of each simulation in the data set.
     """
 
-    def __init__(self, output_file: Path, trace_lines: Dict[str, TraceLine]):
-        self._output_file = output_file
-        self._trace_lines = trace_lines
+    def __init__(self, plotter: Plotter = None):
+        self._plotter = plotter
 
     def process(self, data: Dict[str, List[int]]):
 
@@ -98,19 +85,10 @@ class TerminationTimesPlotter(DataProcessor):
             traces.append(TraceData(label, x=bin_edges, y=cumulative_sum))
 
         #
-        # Plot each trace
+        # Plot all traces
         #
-        scatters: List[Scatter] = []
-        for trace in traces:
-            line = self._trace_lines.get(trace.label, {})
-
-            try:
-                scatters.append(Scatter(x=trace.x, y=trace.y, name=trace.label, line=line))
-            except PlotlyDictKeyError as e:
-                message, *_ = str(e).split('\n')
-                raise ProcessingError(f"trace configuration error: {message}")
-
-        plotly.plot(scatters, filename=str(self._output_file), auto_open=False)
+        if self._plotter:
+            self._plotter.plot(traces)
 
 
 def load_traces(path: Path) -> List[Trace]:
@@ -160,10 +138,10 @@ def main():
         ),
         selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=TerminationTimesLoader(),
-        processor=TerminationTimesPlotter(
-            output_file=Path(output_file),
-            trace_lines={trace.label: trace.line for trace in traces}
-        )
+        processor=TerminationTimesProcessor(Plotter(
+            trace_lines={trace.label: trace.line for trace in traces},
+            output=Path(output_file)
+        ))
     )
 
     return app.run()
