@@ -20,3 +20,4 @@ class Application:
         data = self.loader.load(data_files)
         print("Processing...")
         self.processor.process(data)
+        print("Completed successfully!")

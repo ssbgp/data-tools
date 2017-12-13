@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from collections import defaultdict
+from typing import Dict, List
 
 from processing.file_collection import FileCollection
 
@@ -12,9 +13,9 @@ class LabeledFileCollection(FileCollection):
     """
 
     def __init__(self):
-        self._files = defaultdict(list)
+        self._files: Dict[str, List[Path]] = defaultdict(list)
 
-    def add(self, file: Path, label):
+    def add(self, file: Path, label: str):
         """ Adds a new file to the collection with the specified label """
         self._files[label].append(file)
 
