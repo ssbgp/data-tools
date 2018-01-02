@@ -30,7 +30,7 @@ from processing.data_loader import DataLoader
 from processing.data_processor import DataProcessor
 from processing.directory import Directory
 from processing.extension_selector import ExtensionFileSelector
-from processing.files import open_csv
+from processing.utils import open_csv
 from processing.labeled_file_collection import LabeledFileCollection
 from processing.labeled_file_container import LabeledFileContainer
 from processing.plotter import Plotter, TraceLine, TraceData
