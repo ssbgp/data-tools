@@ -9,7 +9,7 @@ from processing.labeled_file_container import LabeledFileContainer
 class ExtensionFileSelector(FileSelector):
     """ Selects only files with the defined extension as data files """
 
-    def __init__(self, extension: str):
+    def __init__(self, extension: str) -> None:
         self.extension = extension
         self._pattern = f"*{self.extension}"
 

@@ -9,13 +9,13 @@ from tools.utils import print_error
 class Application:
 
     def __init__(self, container: FileContainer, selector: FileSelector,
-                 loader: DataLoader, processor: DataProcessor):
+                 loader: DataLoader, processor: DataProcessor) -> None:
         self.container = container
         self.selector = selector
         self.loader = loader
         self.processor = processor
 
-    def run(self):
+    def run(self) -> None:
         try:
             print("Selecting files...")
             data_files = self.selector.select(self.container)

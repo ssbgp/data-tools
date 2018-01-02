@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from abc import abstractmethod
 from collections import Iterable
+from typing import Iterator
 
 
 class FileCollection(Iterable):
@@ -8,5 +11,5 @@ class FileCollection(Iterable):
     """
 
     @abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Path]:
         """ Returns an iterator to iterate over each file in the collection """

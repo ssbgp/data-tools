@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Iterator
+
 from abc import ABC, abstractmethod
 
 
@@ -11,11 +14,11 @@ class FileContainer(ABC):
     """
 
     @abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Path]:
         """ Returns an iterator to iterate over each file in the container """
 
     @abstractmethod
-    def glob(self, pattern: str):
+    def glob(self, pattern: str) -> Iterator[Path]:
         """
         Iterates over all files and yields all existing files (of any kind,
         including directories) matching the given pattern.

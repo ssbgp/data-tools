@@ -1,7 +1,9 @@
-from typing import Dict
+from pathlib import Path
+from typing import Dict, Iterator, Tuple
 
 from processing.directory import Directory
 from processing.file_container import FileContainer
+from processing.types import Label
 
 
 class LabeledFileContainer(FileContainer):
@@ -10,43 +12,54 @@ class LabeledFileContainer(FileContainer):
     provides methods to access the files using the corresponding label.
     """
 
-    def __init__(self, directories: Dict[str, Directory]):
-        self._directories = directories
+    def __init__(self, directories: Dict[Label, Directory]) -> None:
+        self._directories: Dict[Label, Directory] = directories
 
-    def __iter__(self):
-        def iterator(directories):
-            for directory in directories:
-                for file in directory.iterdir():
+    def __iter__(self) -> Iterator[Path]:
+        """ Returns iterator to iterate over each file in this container """
+
+        def iterator() -> Iterator[Path]:
+            for directory in self._directories.values():
+                for file in directory:
                     yield file
 
-        return iterator(self._directories.keys())
+        return iterator()
 
-    def iter_by_label(self):
-        """
-        Returns iterator that iterates over each file and its corresponding
-        label.
-        """
+    def iter_by_label(self) -> Iterator[Tuple[Label, Path]]:
+        """ Returns iterator to iterate over each file and its corresponding label """
 
-        def iterator(directories: dict):
-            """ Yields each file and its corresponding label """
-            for directory, label in directories.items():
-                for file in directory.iterdir():
-                    yield file, label
+        def iterator() -> Iterator[Tuple[Label, Path]]:
+            for label, directory in self._directories.items():
+                for file in directory:
+                    yield label, file
 
-        return iterator(self._directories)
+        return iterator()
 
-    def glob(self, pattern: str):
-        def iterator(directories, pattern):
-            for directory in directories:
+    def glob(self, pattern: str) -> Iterator[Path]:
+        """ Returns iterator to iterate over each file matching the given *pattern* """
+
+        def iterator() -> Iterator[Path]:
+            for directory in self._directories.values():
                 for file in directory.glob(pattern):
                     yield file
 
-        return iterator(self._directories.keys(), pattern)
+        return iterator()
 
-    def glob_by_label(self, pattern: str):
-        def iterator(directories, pattern):
-            for directory, label in directories:
+    def glob_by_label(self, pattern: str) -> Iterator[Tuple[Label, Path]]:
+        """
+        Returns iterator to iterate over each file matching the given *pattern* and its
+        corresponding label
+        """
+
+        def iterator() -> Iterator[Tuple[Label, Path]]:
+            for label, directory in self._directories.items():
                 for file in directory.glob(pattern):
                     yield label, file
 
-        return iterator(self._directories.items(), pattern)
+        return iterator()
+
+    def __str__(self) -> str:
+        return str(self._directories)
+
+    def __repr__(self) -> str:
+        return repr(self._directories)
