@@ -56,7 +56,7 @@ def main():
     # Setup the application
     app = Application(
         container=LabeledFileContainer(
-            directories={trace.label: trace.data_dir for trace in traces}
+            containers={trace.label: trace.data_dir for trace in traces}
         ),
         selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=TerminationTimesLoader(),

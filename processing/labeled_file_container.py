@@ -8,19 +8,19 @@ from processing.types import Label
 
 class LabeledFileContainer(FileContainer):
     """
-    This is a file container that associates each file with a label. It
-    provides methods to access the files using the corresponding label.
+    This is a file container that aggregates multiple containers, associating each container with
+    a label. It provides methods to access each container by its label.
     """
 
-    def __init__(self, directories: Dict[Label, Directory]) -> None:
-        self._directories: Dict[Label, Directory] = directories
+    def __init__(self, containers: Dict[Label, FileContainer]) -> None:
+        self._containers: Dict[Label, FileContainer] = containers
 
     def __iter__(self) -> Iterator[Path]:
         """ Returns iterator to iterate over each file in this container """
 
         def iterator() -> Iterator[Path]:
-            for directory in self._directories.values():
-                for file in directory:
+            for container in self._containers.values():
+                for file in container:
                     yield file
 
         return iterator()
@@ -29,8 +29,8 @@ class LabeledFileContainer(FileContainer):
         """ Returns iterator to iterate over each file and its corresponding label """
 
         def iterator() -> Iterator[Tuple[Label, Path]]:
-            for label, directory in self._directories.items():
-                for file in directory:
+            for label, container in self._containers.items():
+                for file in container:
                     yield label, file
 
         return iterator()
@@ -39,8 +39,8 @@ class LabeledFileContainer(FileContainer):
         """ Returns iterator to iterate over each file matching the given *pattern* """
 
         def iterator() -> Iterator[Path]:
-            for directory in self._directories.values():
-                for file in directory.glob(pattern):
+            for container in self._containers.values():
+                for file in container.glob(pattern):
                     yield file
 
         return iterator()
@@ -52,14 +52,14 @@ class LabeledFileContainer(FileContainer):
         """
 
         def iterator() -> Iterator[Tuple[Label, Path]]:
-            for label, directory in self._directories.items():
-                for file in directory.glob(pattern):
+            for label, container in self._containers.items():
+                for file in container.glob(pattern):
                     yield label, file
 
         return iterator()
 
     def __str__(self) -> str:
-        return str(self._directories)
+        return str(self._containers)
 
     def __repr__(self) -> str:
-        return repr(self._directories)
+        return repr(self._containers)
