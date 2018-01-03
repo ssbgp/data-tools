@@ -7,7 +7,7 @@ This repository includes a set of tools to process data obtained from the routin
 Here is the list of tools included in this repository.
 
 - basic-data
-- plot-times
+- plot-inv-cumsum
 
 ## Installation
 
@@ -135,10 +135,80 @@ Finally, the most important command of any tool is the one that helps you. Use t
     basic-data --help 
 
 
-## Tool: plot-times
+## Tool: plot-inv-cumsum
 
-Finally, the most important command of any tool is the one that helps you. Use the option `-h/--help` to have the tool print an help message showing its usage pattern and all options with their corresponding descriptions.
+The `plot-inv-cumsum` tool is used to trace a plot of the inverse cumulative sum (ICS) of the termination times for multiple datasets. For each dataset, the inputs of the ICS are the termination times of each data unit. The termination time of a data unit is given by the highest termination time among all of its samples. The output plot includes one trace for the ICS of each dataset.  
 
-    plot-times --help 
+###### Inputs
+
+The tool takes a configuration file specifying the datasets and some properties of the corresponding traces. The configuration file is a JSON formatted file, where each entry defines a dataset. For each dataset we must specify the data directory. Optionally, we can also specify some properties for the line used to trace the ICS for each dataset. Here is an example of an entry for one dataset.
+
+    "BGP-Siblings": {
+        "data": "/path/to/BGP/siblings",
+        "line": {
+            "color": "rgb(205, 12, 24)",
+            "width": 4,
+            "dash": "dot"
+        }
+    }
+
+The key "BGP-Siblings" is used to identify the dataset and it will be used as the label. The "line" attribute allows us to adjust the look to the line used to trace the ICS of the dataset. These are all optional. Default values will be used for this properties if none are specified. Here is a list of the properties that can be configured.
+
+- Color, expects an RGB triplet
+- Width, expects an integer value specifying the width
+- Dash, expects one of three values:
+    - dot, traces a dotted line
+    - dash, traces a dashed line
+    - dashdot, traces a line with dots and dashes interleaved
+    
+    If this attribute is not defined, then it traces a continuous line.
+
+###### Outputs
+
+The output of the tool is an HTML file. When this file is opened in a browser, it displays an interactive plot with one trace for each input dataset. Each trace corresponds to the ICS of a dataset and all of them are labeled using the key specified for each dataset. In our example, the label would be "BGP-Siblings" for that particular dataset.
+
+
+#### Usage
+
+Here we consider an usage example to illustrate how to use the tool. Assume we performed simulations with BGP and SS-BGP under the *siblings* annotated topology. We want to trace the ICS of the termination times for each protocol separately.
+
+1. Store the data corresponding to each protocol in its own directory, as shown below.
+
+    - data/
+        - BGP/
+        - SS-BGP/
+        
+    Data from BGP is stored in `data/BGP/`, and data from SS-BGP is store in `data/SS-BGP/`.
+
+1. Create the configuration file, called `conf.json`.
+
+    {
+        "BGP/Siblings": {
+            "data": "/path/to/BGP/siblings",
+            "line": {
+                "color": "rgb(255, 51, 51)"
+            }
+        },
+        "SS-BGP/Siblings": {
+            "data": "/path/to/SS-BGP/siblings",
+            "line": {
+                "color": "rgb(41, 163, 41)"
+                "dash": "dash"
+            }
+        }
+    }
+    
+1. Run the tool.
+
+
+    plot-inv-cumsum conf.json
+    
+
+This will output an HTML file called `times-inv-cumsum.csv`. The corresponding plot will show two traces, (1) a trace using continuous red line, corresponding to the ICS of BGP, and (2) a trace using a dashed green line, corresponding to the ICS of SS-BGP.
+
+
+Finally, to ask for help, use option `-h/--help`. It prints an help message showing its usage pattern and all options with their corresponding descriptions.
+
+    plot-inv-cumsum --help 
 
 

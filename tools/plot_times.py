@@ -7,8 +7,8 @@ The termination time of each destination corresponds to the maximum of all termi
 among all samples (seeds) of that destination.
 
 Usage:
+  plot-times <conf-file> [ --out=<output>]
   plot-times --traces <traces>... [ --out=<output>]
-  plot-times --file=<file> [ --out=<output>]
   plot-times (-h | --help)
 
 Options:
