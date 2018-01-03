@@ -68,19 +68,77 @@ After making sure python 3.6 (or later) is installed, you have to make sure `pip
 
 ## Tool: basic-data
 
-The most important command of any tool is the one that helps you. Execute the tool with option `-h/--help`.
+The `basic-data` tool computes various statistical metrics for multiple sets of data. A *dataset* corresponds to a directory containing multiple data files (`.basic.csv`) output from the simulator. A data file is called a *data unit*. Each data unit contains multiple data samples, obtained from multiple simulations with the same inputs, but different seeds for generating the message delays. 
 
-    basic-data --help
+###### Inputs
+
+The tool takes a configuration file specifying the datasets to compute metrics for. The configuration file is a JSON formatted file containing a single object. Each key/value pair on this object specifies one dataset, where the value is the path to the directory containing the data files, and the key is a label to identify that dataset. Here is an example of a configuration file specifying two different datasets,
     
-This command prints an help message showing the tool's usage pattern and a description for each option.  
+    {
+        "BGP - Peer+ 0.25%": "/path/to/bgp/peer+/0.25%",
+        "SS-BGP - Siblings": "/path/to/ss-bgp/siblings"
+    }
+
+###### Outputs
+
+For each dataset specified in the configuration file, the tool computes all of the following metrics. 
+
+- Number of non-terminated data units (destinations)
+    
+    *A data unit (destination) is considered to have not terminated if it contains at least one sample that did not terminate.*
+    
+- Average of the termination times over all samples of each data unit in the dataset, excluding samples that did not terminate.
+
+    *The termination time of one sample corresponds to time at which there were no more routing events to be processed.* 
+
+- Average of the number of messages over all samples of each data unit in the dataset, excluding samples that did not terminate.
+
+- Average of the number of deactivations over all samples of each data unit in the dataset, excluding samples that did not terminate.
+
+The actual output is a CSV file containing a table with a row for each dataset and a column for each output metric. Here is an example of the corresponding table for the two datasets included in the example of a configuration file shown before.
+
+|      Dataset      	| Data Unit Count 	| Non-Terminated Count 	| Termination Time (Avg.) 	| Messages (Avg.) 	| Deactivations (Avg.) 	|
+|:-----------------:	|:---------------:	|:--------------------:	|:-----------------------:	|:---------------:	|:--------------------:	|
+| BGP - Peer+ 0.25% 	|       200       	|          25          	|         34000.0         	|     400000.0    	|          0.0         	|
+| SS-BGP - Siblings 	|       200       	|           0          	|         24000.0         	|     200000.0    	|          1.0         	|
+
+#### Usage
+
+Here we consider an usage example to illustrate how to use the tool. Assume we performed simulations with BGP and SS-BGP under the *siblings* annotated topology. We want to compute our statistical metrics for each protocol independently, which means each protocol requires its own dataset. To accomplish this, 
+
+1. Store the data corresponding to each protocol in its own directory, as shown below.
+
+    - data/
+        - BGP/
+        - SS-BGP/
+        
+    Data from BGP is stored in `data/BGP/`, and data from SS-BGP is store in `data/SS-BGP/`.
+
+1. Create the configuration file, called `conf.json`.
+
+
+    {
+        "BGP - Siblings": "data/BGP",
+        "SS-BGP - Siblings": "data/SS-BGP"
+    }
+    
+1. Run the tool.
+
+
+    basic-data conf.json
+    
+
+This will output a CSV file called `basic-data.csv`.
+
+Finally, the most important command of any tool is the one that helps you. Use the option `-h/--help` to have the tool print an help message showing its usage pattern and all options with their corresponding descriptions.
+
+    basic-data --help 
 
 
 ## Tool: plot-times
 
-The most important command of any tool is the one that helps you. Execute the tool with option `-h/--help`.
+Finally, the most important command of any tool is the one that helps you. Use the option `-h/--help` to have the tool print an help message showing its usage pattern and all options with their corresponding descriptions.
 
-    plot-times --help
-    
-This command prints an help message showing the tool's usage pattern and a description for each option.
+    plot-times --help 
 
 
