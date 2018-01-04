@@ -100,7 +100,8 @@ def load_traces(path: Path) -> List[Trace]:
     with open(path) as file:
         traces: List[Trace] = []
         for label, specs in json.load(file).items():
-            trace = Trace(label, Directory(Path(specs['data'])), specs['line'])
+            line = specs['line'] if 'line' in specs else {}
+            trace = Trace(label, Directory(Path(specs['data'])), line)
             traces.append(trace)
 
         return traces
