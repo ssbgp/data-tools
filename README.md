@@ -70,16 +70,16 @@ After making sure python 3.6 (or later) is installed, you have to make sure `pip
 
 The `basic-data` tool computes various statistical metrics for multiple sets of data. A *dataset* corresponds to a directory containing multiple data files (`.basic.csv`) output from the simulator. A data file is called a *data unit*. Each data unit contains multiple data samples, obtained from multiple simulations with the same inputs, but different seeds for generating the message delays. 
 
-###### Inputs
+#### Inputs
 
-The tool takes a configuration file specifying the datasets to compute metrics for. The configuration file is a JSON formatted file containing a single object. Each key/value pair on this object specifies one dataset, where the value is the path to the directory containing the data files, and the key is a label to identify that dataset. Here is an example of a configuration file specifying two different datasets,
+The tool takes a configuration file specifying the datasets to compute metrics for. The configuration file is a JSON formatted file containing a single object. Each key/value pair on this object specifies one dataset, where the value is the path to the directory containing the data files, and the key is a label to identify that dataset. Here is an example of a configuration file specifying two different datasets.
     
     {
         "BGP - Peer+ 0.25%": "/path/to/bgp/peer+/0.25%",
         "SS-BGP - Siblings": "/path/to/ss-bgp/siblings"
     }
 
-###### Outputs
+#### Outputs
 
 For each dataset specified in the configuration file, the tool computes all of the following metrics. 
 
@@ -106,40 +106,42 @@ The actual output is a CSV file containing a table with a row for each dataset a
 
 Here we consider an usage example to illustrate how to use the tool. Assume we performed simulations with BGP and SS-BGP under the *siblings* annotated topology. We want to compute our statistical metrics for each protocol independently, which means each protocol requires its own dataset. To accomplish this, 
 
-1. Store the data corresponding to each protocol in its own directory, as shown below.
-
-    - data/
-        - BGP/
-        - SS-BGP/
+1. Store the data corresponding to each protocol in its own directory: store data from BGP is stored in `data/BGP/`, and data from SS-BGP is store in `data/SS-BGP/`.
         
-    Data from BGP is stored in `data/BGP/`, and data from SS-BGP is store in `data/SS-BGP/`.
-
 1. Create the configuration file, called `conf.json`.
 
-
-    {
-        "BGP - Siblings": "data/BGP",
-        "SS-BGP - Siblings": "data/SS-BGP"
-    }
+        {
+            "BGP - Siblings": "data/BGP",
+            "SS-BGP - Siblings": "data/SS-BGP"
+        }    
     
 1. Run the tool.
 
-
-    basic-data conf.json
+        basic-data conf.json
     
 
 This will output a CSV file called `basic-data.csv`.
 
-Finally, the most important command of any tool is the one that helps you. Use the option `-h/--help` to have the tool print an help message showing its usage pattern and all options with their corresponding descriptions.
+
+#### How to specify a different output name and/or directory?
+By default, the tool outputs a single file in the working directory called `basic-data.csv`. To have the tool output a file with a different name and/or store it in a different directory use the `--out` option. For instance, to have the tool store the file in directory `/home/user/data` with name `siblings.csv`, type the following.
+
+    basic-data conf.json --out /home/user/data/siblings
+
+
+#### How to ask for help?
+Use option `-h/--help`. 
 
     basic-data --help 
+    
+This command prints an help message showing its usage pattern and all options with their corresponding descriptions.
 
 
 ## Tool: inv-cumsum
 
-The `inv-cumsum` tool is used to trace a plot of the inverse cumulative sum (ICS) of the termination times for multiple datasets. For each dataset, the inputs of the ICS are the termination times of each data unit. The termination time of a data unit is given by the highest termination time among all of its samples. The output plot includes one trace for the ICS of each dataset.  
+The `inv-cumsum` tool is used to compute the inverse cumulative sum (ICS) of the termination times for multiple datasets. For each dataset, the inputs of the ICS are the termination times of each data unit. The termination time of a data unit is given by the highest termination time among all of its samples. The output plot includes one trace for the ICS of each dataset.  
 
-###### Inputs
+#### Inputs
 
 The tool takes a configuration file specifying the datasets and some properties of the corresponding traces. The configuration file is a JSON formatted file, where each entry defines a dataset. For each dataset we must specify the data directory. Optionally, we can also specify some properties for the line used to trace the ICS for each dataset. Here is an example of an entry for one dataset.
 
@@ -163,7 +165,7 @@ The key "BGP-Siblings" is used to identify the dataset and it will be used as th
     
     If this attribute is not defined, then it traces a continuous line.
 
-###### Outputs
+#### Outputs
 
 The tool outputs two files. 
 
@@ -176,38 +178,29 @@ The tool outputs two files.
 
 Here we consider an usage example to illustrate how to use the tool. Assume we performed simulations with BGP and SS-BGP under the *siblings* annotated topology. We want to trace the ICS of the termination times for each protocol separately.
 
-1. Store the data corresponding to each protocol in its own directory, as shown below.
-
-    - data/
-        - BGP/
-        - SS-BGP/
+1. Store the data corresponding to each protocol in its own directory: store data from BGP is stored in `data/BGP/`, and data from SS-BGP is store in `data/SS-BGP/`.
         
-    Data from BGP is stored in `data/BGP/`, and data from SS-BGP is store in `data/SS-BGP/`.
-
 1. Create the configuration file, called `conf.json`.
 
-
-    {
-        "BGP/Siblings": {
-            "data": "/path/to/BGP/siblings",
-            "line": {
-                "color": "rgb(255, 51, 51)"
-            }
-        },
-        "SS-BGP/Siblings": {
-            "data": "/path/to/SS-BGP/siblings",
-            "line": {
-                "color": "rgb(41, 163, 41)"
-                "dash": "dash"
+        {
+            "BGP/Siblings": {
+                "data": "/path/to/BGP/siblings",
+                "line": {
+                    "color": "rgb(255, 51, 51)"
+                }
+            },
+            "SS-BGP/Siblings": {
+                "data": "/path/to/SS-BGP/siblings",
+                "line": {
+                    "color": "rgb(41, 163, 41)"
+                    "dash": "dash"
+                }
             }
         }
-    }
     
 1. Run the tool.
 
-
-    inv-cumsum conf.json
-    
+        inv-cumsum conf.json    
 
 This will output:
  
@@ -215,8 +208,16 @@ This will output:
 
 1. a CSV file called `inv-cumsum.csv` with column for BGP and another for SS-BGP.
 
-###### How to ask for help?
 
+#### How to specify a different output name/path?
+By default, the tool outputs two files in the working directory called `inv-cumsum.html` and `inv-cumsum.csv`. To change the name/path of these files use the `--out` option. For instance, to have the tool output the files to a directory `/home/user/data` and assign them the name `siblings` type the following.
+
+    inv-cumsum conf.json --out /home/user/data/siblings
+
+The tool will output files: `/home/user/data/siblings.html` and `/home/user/data/siblings.csv`
+
+
+#### How to ask for help?
 Use option `-h/--help`. 
 
     inv-cumsum --help 
