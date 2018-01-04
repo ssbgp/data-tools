@@ -48,16 +48,18 @@ After making sure python 3.6 (or later) is installed, you have to make sure `pip
 
         git clone https://github.com/ssbgp/data-tools.git
         
-1. Move to project directory.
+   If you do not have git installed, you can download the project directly from the GitHub page.
+        
+1. Move to the project directory.
 
         cd data-tools
         
-1. Install tools.
+1. Install all of the tools.
 
-        python -m pip install .
-        python -m pip install -r requirements.txt
+        python -m pip install . --user
+        python -m pip install -r requirements.txt --user
         
-   **Warning:** for some distributions you mut use `python3` instead of `python` to use python 3.
+   **Warning:** some linux distributions use `python3` instead of `python` to reference Python 3.
 
 1. Check if tools were correctly installed.
 
