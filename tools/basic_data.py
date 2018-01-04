@@ -1,12 +1,18 @@
 """
-SS-BGP Data Tools: Count Terminations
+SS-BGP Data Tools: Basic Data
 
-Counts the number of terminated and non-terminated destinations.
+Processes raw data from the simulator to obtain basic statistics.
 
-It looks for '.basic.csv' files inside the specified data directories. Each one of these files is
-considered to be a single destination. A destination is considered terminated if every sample
-terminated, that is, if all samples have a value of "True" set for the "Terminated" column of the
-corresponding data file.
+For each dataset it computes:
+- Number of samples
+- Number of destinations
+- Number of terminated and non-terminated destinations
+- Average of termination times
+- Average of message counts
+- Average of deactivation counts
+
+A destination is considered to have not terminated if at least one of its samples did not terminate.
+The averages are computes over all samples, excluding only those which did not terminate.
 
 Usage:
   basic-data <conf-file> [ --ignore-non-existing ]
