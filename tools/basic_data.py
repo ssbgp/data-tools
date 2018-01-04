@@ -9,9 +9,9 @@ terminated, that is, if all samples have a value of "True" set for the "Terminat
 corresponding data file.
 
 Usage:
-  count-terminations <conf-file> [ --ignore-non-existing ]
-  count-terminations (-h | --help)
-  count-terminations (-V | --version)
+  basic-data <conf-file> [ --ignore-non-existing ]
+  basic-data (-h | --help)
+  basic-data (-V | --version)
 
 Options:
   -h --help               Show this screen.
@@ -91,44 +91,56 @@ def load_data_sets(conf_path: Path) -> Dict[Label, Path]:
         return {label: Path(directory) for label, directory in json.load(file).items()}
 
 
-class Data:
-    __slots__ = "sample_count", "terminations"
+class DestinationData:
+    __slots__ = "sample_count", "terminations", "termination_times", "messages", "deactivations"
 
     def __init__(self):
         self.sample_count: int = 0
         self.terminations: List[bool] = []
+        self.termination_times: List[int] = []
+        self.messages: List[int] = []
+        self.deactivations: List[int] = []
 
 
 class TerminationsDataLoader(DataLoader):
 
-    def load(self, data_files: LabeledFileCollection) -> Dict[Label, List[Data]]:
+    def load(self, data_files: LabeledFileCollection) -> Dict[Label, List[DestinationData]]:
 
-        destinations: Dict[Label, List[Data]] = defaultdict(list)
+        datasets: Dict[Label, List[DestinationData]] = defaultdict(list)
         for label, path in data_files.iter_by_label():
-            data = Data()
+            data = DestinationData()
             with open_csv(path) as file:
                 for row in file:
-                    terminated = True if row["Terminated"] == "Yes" else False
-                    data.terminations.append(terminated)
                     data.sample_count += 1
 
-            destinations[label].append(data)
+                    terminated = True if row["Terminated"] == "Yes" else False
+                    data.terminations.append(terminated)
 
-        return destinations
+                    if terminated:
+                        data.termination_times.append(int(row["Termination Time (Total)"]))
+                        data.messages.append(int(row["Message Count"]))
+                        data.deactivations.append(int(row["Detection Count"]))
+
+            datasets[label].append(data)
+
+        return datasets
 
 
 class TerminationsDataProcessor(DataProcessor):
 
-    def process(self, simulations: Dict[Label, List[Data]]):
-        for label, data_items in simulations.items():
-            destination_count = len(data_items)
-            terminated_count = sum(int(all(data.terminations)) for data in data_items)
+    def process(self, datasets: Dict[Label, List[DestinationData]]):
+        for label, dataset in datasets.items():
+            destination_count = len(dataset)
+            terminated_count = sum(int(all(destination.terminations)) for destination in dataset)
 
             print(label)
-            print("  Avg. sample count:", np.average([data.sample_count for data in data_items]))
-            print("  Destination count:", destination_count)
+            print("  Total sample count:", sum(data.sample_count for data in dataset))
+            print("  Destination count:", len(dataset))
             print("  Terminated count:", terminated_count)
             print("  Non-terminated count:", destination_count - terminated_count)
+            print("  Termination Time (Avg.):", np.average([value for dst in dataset for value in dst.termination_times]))
+            print("  Message Count (Avg.):", np.average([value for dst in dataset for value in dst.messages]))
+            print("  Deactivation Count (Avg.):", np.average([value for dst in dataset for value in dst.deactivations]))
             print()
 
 

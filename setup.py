@@ -15,7 +15,7 @@ setup(
     entry_points={
         'console_scripts': [
             'plot-times=tools.plot_times:main',
-            'count-terminations=tools.count_terminations:main',
+            'basic-data=tools.basic_data:main',
         ],
     }
 )
