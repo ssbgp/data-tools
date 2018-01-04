@@ -15,7 +15,7 @@ A destination is considered to have not terminated if at least one of its sample
 The averages are computes over all samples, excluding only those which did not terminate.
 
 Usage:
-  basic-data <conf-file> [ --ignore-non-existing ]
+  basic-data <conf-file> [ --ignore-non-existing ] [ --out=<path> ]
   basic-data (-h | --help)
   basic-data (-V | --version)
 
@@ -23,6 +23,7 @@ Options:
   -h --help               Show this screen.
   -V --version            Show version.
   --ignore-non-existing   Ignore data directories specified in conf file that do not exist
+  --out=<path>            Specify a custom output path. [Default: basic-data]
 
 """
 import json
@@ -50,6 +51,7 @@ from tools.utils import print_error
 def main():
     args = docopt(__doc__, version="Basic Data v0.1")
     conf_path = Path(args['<conf-file>'])
+    output_path = Path(args['--out'] + ".csv")
 
     if not conf_path.is_file():
         print_error(f"Configuration file was not found: {str(conf_path)}")
@@ -71,7 +73,7 @@ def main():
         ),
         selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=BasicDataLoader(),
-        processor=BasicDataProcessor(printer=CSVPrinter(Path("basic-data.csv")))
+        processor=BasicDataProcessor(printer=CSVPrinter(output_path))
     )
 
     return app.run()
