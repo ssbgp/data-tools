@@ -7,7 +7,7 @@ This repository includes a set of tools to process data obtained from the routin
 Here is the list of tools included in this repository.
 
 - basic-data
-- plot-inv-cumsum
+- inv-cumsum
 
 ## Installation
 
@@ -34,7 +34,7 @@ Most linux distributions come with python 3 pre-installed. Thus, the first step 
 
 If the installed is earlier than 3.6, then you have to install a later version. The best way to install a new python version may differ from distribution to distribution. Our suggestion is to search for the best way to install python 3.6 (or later) on your distribution and install it that way. 
 
-After making sure python 3.6 (or later) is installed, you have to make sure `pip` is installed. Most linux distribution include `pip` in their main repositories. To install `pip` follow the indications included in this [guide](https://packaging.python.org/guides/installing-using-linux-tools/) for your linux distribution.
+After making sure python 3.6 (or later) is installed, you have to make sure `pip` is installed. Most linux distribution include `pip` in their main repositories. To install `pip` follow the indications included in this [guide](https://packaging.python.org/guides/installing-using-linux-tools) for your linux distribution.
 
 
 ### Install Tools
@@ -62,7 +62,7 @@ After making sure python 3.6 (or later) is installed, you have to make sure `pip
 1. Check if tools were correctly installed.
 
         basic-data -h
-        plot-times -h
+        inv-cumsum -h
         
    Each of these commands will fail if the tools are not installed correctly. Otherwise, they will show a help message for each tool.
 
@@ -135,9 +135,9 @@ Finally, the most important command of any tool is the one that helps you. Use t
     basic-data --help 
 
 
-## Tool: plot-inv-cumsum
+## Tool: inv-cumsum
 
-The `plot-inv-cumsum` tool is used to trace a plot of the inverse cumulative sum (ICS) of the termination times for multiple datasets. For each dataset, the inputs of the ICS are the termination times of each data unit. The termination time of a data unit is given by the highest termination time among all of its samples. The output plot includes one trace for the ICS of each dataset.  
+The `inv-cumsum` tool is used to trace a plot of the inverse cumulative sum (ICS) of the termination times for multiple datasets. For each dataset, the inputs of the ICS are the termination times of each data unit. The termination time of a data unit is given by the highest termination time among all of its samples. The output plot includes one trace for the ICS of each dataset.  
 
 ###### Inputs
 
@@ -165,7 +165,11 @@ The key "BGP-Siblings" is used to identify the dataset and it will be used as th
 
 ###### Outputs
 
-The output of the tool is an HTML file. When this file is opened in a browser, it displays an interactive plot with one trace for each input dataset. Each trace corresponds to the ICS of a dataset and all of them are labeled using the key specified for each dataset. In our example, the label would be "BGP-Siblings" for that particular dataset.
+The tool outputs two files. 
+
+1. An HTML file meant to be opened in a browser. The browser will display an interactive plot with one trace for each input dataset. Each trace corresponds to the ICS of a dataset and all of them are labeled using the key specified for each dataset. In our example, the label would be "BGP-Siblings" for that particular dataset.
+
+1. An CSV file containing the bins and the (relative) cumulative sums for each dataset. This file includes (1) a single column with the bins, which are common to all datasets, and (2) a column for each dataset containing its the relative cumulative sum. The file can be opened in a spreadsheet application, such as MS Excel, to analyse its data in anyway you want.
 
 
 #### Usage
@@ -181,6 +185,7 @@ Here we consider an usage example to illustrate how to use the tool. Assume we p
     Data from BGP is stored in `data/BGP/`, and data from SS-BGP is store in `data/SS-BGP/`.
 
 1. Create the configuration file, called `conf.json`.
+
 
     {
         "BGP/Siblings": {
@@ -201,14 +206,21 @@ Here we consider an usage example to illustrate how to use the tool. Assume we p
 1. Run the tool.
 
 
-    plot-inv-cumsum conf.json
+    inv-cumsum conf.json
     
 
-This will output an HTML file called `times-inv-cumsum.csv`. The corresponding plot will show two traces, (1) a trace using continuous red line, corresponding to the ICS of BGP, and (2) a trace using a dashed green line, corresponding to the ICS of SS-BGP.
+This will output:
+ 
+1. an HTML file called `inv-cumsum.html`. The corresponding plot will show two traces, (1) a trace using continuous red line, corresponding to the ICS of BGP, and (2) a trace using a dashed green line, corresponding to the ICS of SS-BGP.
 
+1. a CSV file called `inv-cumsum.csv` with column for BGP and another for SS-BGP.
 
-Finally, to ask for help, use option `-h/--help`. It prints an help message showing its usage pattern and all options with their corresponding descriptions.
+###### How to ask for help?
 
-    plot-inv-cumsum --help 
+Use option `-h/--help`. 
+
+    inv-cumsum --help 
+    
+This command prints an help message showing its usage pattern and all options with their corresponding descriptions.
 
 
