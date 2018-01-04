@@ -14,7 +14,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'plot-times=tools.plot_times:main',
+            'inv-cumsum=tools.inv_cumsum:main',
             'basic-data=tools.basic_data:main',
         ],
     }

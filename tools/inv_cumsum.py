@@ -1,28 +1,28 @@
 """
 SS-BGP Data Tools: Plot Termination Times
 
-Plots the cumulative sum of the termination times of each destination from multiple sets of data.
+Computes the inverse cumulative sum of the destinations' termination time for multiple datasets.
 
-The termination time of each destination corresponds to the maximum of all termination times
-among all samples (seeds) of that destination.
+The termination time of a destination corresponds to the highest termination time among all of
+its samples.
 
 Usage:
-  plot-times --traces <traces>... [ --out=<output>]
-  plot-times --file=<file> [ --out=<output>]
-  plot-times (-h | --help)
+  inv-cumsum <conf-file> [ --out=<path> ]
+  inv-cumsum (-h | --help)
 
 Options:
   -h --help      Show this screen.
   -V --version   Show version.
+  --out=<path>   Specify a custom output path. [Default: inv-cumsum]
 
 """
 import json
 import sys
-from collections import defaultdict
 from pathlib import Path
 from typing import List, Dict, NamedTuple
 
 import numpy as np
+from collections import defaultdict
 from docopt import docopt
 
 from processing.application import Application
@@ -30,22 +30,18 @@ from processing.data_loader import DataLoader
 from processing.data_processor import DataProcessor
 from processing.directory import Directory
 from processing.extension_selector import ExtensionFileSelector
-from processing.utils import open_csv
 from processing.labeled_file_collection import LabeledFileCollection
 from processing.labeled_file_container import LabeledFileContainer
 from processing.plotter import Plotter, TraceLine, TraceData
+from processing.utils import open_csv
 from tools.utils import print_error
 
 
 def main():
     args = docopt(__doc__, version="Plot Times v0.1")
+    output_path = args['--out']
 
-    output_file = "plot.html" if not args['--out'] else args['--out']
-
-    if args['--traces']:
-        traces = parse_traces(args['<traces>'])
-    else:
-        traces = load_traces(args['--file'])
+    traces = load_traces(args['<conf-file>'])
 
     # Check if all data directories actually exist
     for trace in traces:
@@ -60,10 +56,12 @@ def main():
         ),
         selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=TerminationTimesLoader(),
-        processor=TerminationTimesProcessor(Plotter(
-            trace_lines={trace.label: trace.line for trace in traces},
-            output=Path(output_file)
-        ))
+        processor=TerminationTimesProcessor(
+            plotter=Plotter(
+                trace_lines={trace.label: trace.line for trace in traces},
+                output=Path(output_path + '.html')
+            )
+        )
     )
 
     return app.run()
