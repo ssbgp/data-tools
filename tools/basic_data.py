@@ -19,10 +19,11 @@ Options:
   --ignore-non-existing   Ignore data directories specified in conf file that do not exist
 
 """
+import csv
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 from collections import defaultdict
@@ -129,19 +130,39 @@ class TerminationsDataLoader(DataLoader):
 class TerminationsDataProcessor(DataProcessor):
 
     def process(self, datasets: Dict[Label, List[DestinationData]]):
-        for label, dataset in datasets.items():
-            destination_count = len(dataset)
-            terminated_count = sum(int(all(destination.terminations)) for destination in dataset)
 
-            print(label)
-            print("  Total sample count:", sum(data.sample_count for data in dataset))
-            print("  Destination count:", len(dataset))
-            print("  Terminated count:", terminated_count)
-            print("  Non-terminated count:", destination_count - terminated_count)
-            print("  Termination Time (Avg.):", np.average([value for dst in dataset for value in dst.termination_times]))
-            print("  Message Count (Avg.):", np.average([value for dst in dataset for value in dst.messages]))
-            print("  Deactivation Count (Avg.):", np.average([value for dst in dataset for value in dst.deactivations]))
-            print()
+        with open("basic-data.csv", "w") as file:
+            headers = [
+                "Dataset",
+                "Samples",
+                "Destinations",
+                "Terminated",
+                "Non-Terminated",
+                "Termination Times (Avg.)",
+                "Messages (Avg.)",
+                "Deactivations (Avg.)",
+            ]
+
+            writer = csv.DictWriter(file, fieldnames=headers)
+            writer.writeheader()
+
+            for label, dataset in datasets.items():
+                destination_count = len(dataset)
+                terminated_count = sum(int(all(dst.terminations)) for dst in dataset)
+
+                writer.writerow({
+                    "Dataset": label,
+                    "Samples": sum(data.sample_count for data in dataset),
+                    "Destinations": len(dataset),
+                    "Terminated": terminated_count,
+                    "Non-Terminated": destination_count - terminated_count,
+                    "Termination Times (Avg.)":
+                        np.average([value for dst in dataset for value in dst.termination_times]),
+                    "Messages (Avg.)":
+                        np.average([value for dst in dataset for value in dst.messages]),
+                    "Deactivations (Avg.)":
+                        np.average([value for dst in dataset for value in dst.deactivations]),
+                })
 
 
 if __name__ == '__main__':
