@@ -26,6 +26,7 @@ from collections import defaultdict
 from docopt import docopt
 
 from processing.application import Application
+from processing.csv_printer import CSVPrinter
 from processing.data_loader import DataLoader
 from processing.data_processor import DataProcessor
 from processing.directory import Directory
@@ -33,6 +34,7 @@ from processing.extension_selector import ExtensionFileSelector
 from processing.labeled_file_collection import LabeledFileCollection
 from processing.labeled_file_container import LabeledFileContainer
 from processing.plotter import Plotter, TraceLine, TraceData
+from processing.types import Label
 from processing.utils import open_csv
 from tools.utils import print_error
 
@@ -60,7 +62,8 @@ def main():
             plotter=Plotter(
                 trace_lines={trace.label: trace.line for trace in traces},
                 output=Path(output_path + '.html')
-            )
+            ),
+            printer=CSVPrinter(Path(output_path + '.csv'))
         )
     )
 
@@ -155,28 +158,48 @@ class TerminationTimesProcessor(DataProcessor):
     For each label, it computes the cumulative sum and plots it using the specified plotter.
     """
 
-    def __init__(self, plotter: Plotter = None):
+    def __init__(self, plotter: Plotter = None, printer: CSVPrinter = None):
         self._plotter = plotter
+        self._printer = printer
 
     def process(self, data: Dict[str, List[int]]):
 
         #
         # Compute the traces for each data input
         #
-        traces: List[TraceData] = []
+        traces: Dict[Label, List[float]] = {}
+        x = list(range(0, 2001000, 100))
         for label, values in data.items():
             count = len(values)
-            hist, bin_edges = np.histogram(values, bins=range(0, 2001000, 100))
+            hist, bin_edges = np.histogram(values, bins=x)
             cumulative_sum = np.cumsum(hist)
+            # Convert the cumulative sum to a relative cumulative sum
             cumulative_sum = [(count - value) / count for value in cumulative_sum]
 
-            traces.append(TraceData(label, x=bin_edges, y=cumulative_sum))
+            traces[label] = cumulative_sum
 
         #
         # Plot all traces
         #
         if self._plotter:
-            self._plotter.plot(traces)
+            self._plotter.plot(traces=[TraceData(label, x, y) for label, y in traces.items()])
+
+        #
+        # Output trace values to a table
+        #
+        if self._printer:
+            with self._printer:
+                labels = list(traces.keys())
+                bins_label = "Bins (x)"
+                self._printer.set_headers(headers=[bins_label] + labels)
+
+                for i, value in enumerate(x[:-1]):
+                    row = {label: traces[label][i] for label in labels}
+                    row[bins_label] = value
+                    self._printer.print_row(row)
+
+                # The last value in 'x' is the last edge, for which there is not value
+                self._printer.print_row({bins_label: x[-1]})
 
 
 if __name__ == '__main__':
