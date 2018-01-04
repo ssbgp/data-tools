@@ -19,17 +19,17 @@ Options:
   --ignore-non-existing   Ignore data directories specified in conf file that do not exist
 
 """
-import csv
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import numpy as np
 from collections import defaultdict
 from docopt import docopt
 
 from processing.application import Application
+from processing.csv_printer import CSVPrinter
 from processing.data_loader import DataLoader
 from processing.data_processor import DataProcessor
 from processing.directory import Directory
@@ -65,7 +65,7 @@ def main():
         ),
         selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=TerminationsDataLoader(),
-        processor=TerminationsDataProcessor()
+        processor=TerminationsDataProcessor(printer=CSVPrinter(Path("basic-data.csv")))
     )
 
     return app.run()
@@ -129,28 +129,17 @@ class TerminationsDataLoader(DataLoader):
 
 class TerminationsDataProcessor(DataProcessor):
 
+    def __init__(self, printer: CSVPrinter):
+        self.printer = printer
+
     def process(self, datasets: Dict[Label, List[DestinationData]]):
 
-        with open("basic-data.csv", "w") as file:
-            headers = [
-                "Dataset",
-                "Samples",
-                "Destinations",
-                "Terminated",
-                "Non-Terminated",
-                "Termination Times (Avg.)",
-                "Messages (Avg.)",
-                "Deactivations (Avg.)",
-            ]
-
-            writer = csv.DictWriter(file, fieldnames=headers)
-            writer.writeheader()
-
+        with self.printer:
             for label, dataset in datasets.items():
                 destination_count = len(dataset)
                 terminated_count = sum(int(all(dst.terminations)) for dst in dataset)
 
-                writer.writerow({
+                self.printer.print_row({
                     "Dataset": label,
                     "Samples": sum(data.sample_count for data in dataset),
                     "Destinations": len(dataset),
