@@ -142,6 +142,18 @@ class BasicDataProcessor(DataProcessor):
 
     def process(self, datasets: Dict[Label, List[DestinationData]]):
         with self.printer:
+
+            self.printer.set_headers([
+                    "Dataset",
+                    "Samples",
+                    "Destinations",
+                    "Terminated",
+                    "Non-Terminated",
+                    "Termination Times (Avg.)",
+                    "Messages (Avg.)",
+                    "Deactivations (Avg.)",
+            ])
+
             for label, dataset in datasets.items():
                 destination_count = len(dataset)
                 terminated_count = sum(int(all(dst.terminations)) for dst in dataset)

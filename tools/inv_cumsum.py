@@ -1,51 +1,49 @@
 """
 SS-BGP Data Tools: Plot Termination Times
 
-Plots the cumulative sum of the termination times of each destination from multiple sets of data.
+Computes the inverse cumulative sum of the destinations' termination time for multiple datasets.
 
-The termination time of each destination corresponds to the maximum of all termination times
-among all samples (seeds) of that destination.
+The termination time of a destination corresponds to the highest termination time among all of
+its samples.
 
 Usage:
-  plot-times <conf-file> [ --out=<output>]
-  plot-times --traces <traces>... [ --out=<output>]
-  plot-times (-h | --help)
+  inv-cumsum <conf-file> [ --out=<path> ]
+  inv-cumsum (-h | --help)
 
 Options:
   -h --help      Show this screen.
   -V --version   Show version.
+  --out=<path>   Specify a custom output path. [Default: inv-cumsum]
 
 """
 import json
 import sys
-from collections import defaultdict
 from pathlib import Path
 from typing import List, Dict, NamedTuple
 
 import numpy as np
+from collections import defaultdict
 from docopt import docopt
 
 from processing.application import Application
+from processing.csv_printer import CSVPrinter
 from processing.data_loader import DataLoader
 from processing.data_processor import DataProcessor
 from processing.directory import Directory
 from processing.extension_selector import ExtensionFileSelector
-from processing.utils import open_csv
 from processing.labeled_file_collection import LabeledFileCollection
 from processing.labeled_file_container import LabeledFileContainer
 from processing.plotter import Plotter, TraceLine, TraceData
+from processing.types import Label
+from processing.utils import open_csv
 from tools.utils import print_error
 
 
 def main():
     args = docopt(__doc__, version="Plot Times v0.1")
+    output_path = args['--out']
 
-    output_file = "plot.html" if not args['--out'] else args['--out']
-
-    if args['--traces']:
-        traces = parse_traces(args['<traces>'])
-    else:
-        traces = load_traces(args['--file'])
+    traces = load_traces(args['<conf-file>'])
 
     # Check if all data directories actually exist
     for trace in traces:
@@ -60,10 +58,13 @@ def main():
         ),
         selector=ExtensionFileSelector(extension=".basic.csv"),
         loader=TerminationTimesLoader(),
-        processor=TerminationTimesProcessor(Plotter(
-            trace_lines={trace.label: trace.line for trace in traces},
-            output=Path(output_file)
-        ))
+        processor=TerminationTimesProcessor(
+            plotter=Plotter(
+                trace_lines={trace.label: trace.line for trace in traces},
+                output=Path(output_path + '.html')
+            ),
+            printer=CSVPrinter(Path(output_path + '.csv'))
+        )
     )
 
     return app.run()
@@ -99,7 +100,8 @@ def load_traces(path: Path) -> List[Trace]:
     with open(path) as file:
         traces: List[Trace] = []
         for label, specs in json.load(file).items():
-            trace = Trace(label, Directory(Path(specs['data'])), specs['line'])
+            line = specs['line'] if 'line' in specs else {}
+            trace = Trace(label, Directory(Path(specs['data'])), line)
             traces.append(trace)
 
         return traces
@@ -157,28 +159,48 @@ class TerminationTimesProcessor(DataProcessor):
     For each label, it computes the cumulative sum and plots it using the specified plotter.
     """
 
-    def __init__(self, plotter: Plotter = None):
+    def __init__(self, plotter: Plotter = None, printer: CSVPrinter = None):
         self._plotter = plotter
+        self._printer = printer
 
     def process(self, data: Dict[str, List[int]]):
 
         #
         # Compute the traces for each data input
         #
-        traces: List[TraceData] = []
+        traces: Dict[Label, List[float]] = {}
+        x = list(range(0, 2001000, 100))
         for label, values in data.items():
             count = len(values)
-            hist, bin_edges = np.histogram(values, bins=range(0, 2001000, 100))
+            hist, bin_edges = np.histogram(values, bins=x)
             cumulative_sum = np.cumsum(hist)
+            # Convert the cumulative sum to a relative cumulative sum
             cumulative_sum = [(count - value) / count for value in cumulative_sum]
 
-            traces.append(TraceData(label, x=bin_edges, y=cumulative_sum))
+            traces[label] = cumulative_sum
 
         #
         # Plot all traces
         #
         if self._plotter:
-            self._plotter.plot(traces)
+            self._plotter.plot(traces=[TraceData(label, x, y) for label, y in traces.items()])
+
+        #
+        # Output trace values to a table
+        #
+        if self._printer:
+            with self._printer:
+                labels = list(traces.keys())
+                bins_label = "Bins (x)"
+                self._printer.set_headers(headers=[bins_label] + labels)
+
+                for i, value in enumerate(x[:-1]):
+                    row = {label: traces[label][i] for label in labels}
+                    row[bins_label] = value
+                    self._printer.print_row(row)
+
+                # The last value in 'x' is the last edge, for which there is not value
+                self._printer.print_row({bins_label: x[-1]})
 
 
 if __name__ == '__main__':
