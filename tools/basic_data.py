@@ -64,8 +64,8 @@ def main():
             containers={label: Directory(data_dir) for label, data_dir in data_sets.items()}
         ),
         selector=ExtensionFileSelector(extension=".basic.csv"),
-        loader=TerminationsDataLoader(),
-        processor=TerminationsDataProcessor(printer=CSVPrinter(Path("basic-data.csv")))
+        loader=BasicDataLoader(),
+        processor=BasicDataProcessor(printer=CSVPrinter(Path("basic-data.csv")))
     )
 
     return app.run()
@@ -103,7 +103,7 @@ class DestinationData:
         self.deactivations: List[int] = []
 
 
-class TerminationsDataLoader(DataLoader):
+class BasicDataLoader(DataLoader):
 
     def load(self, data_files: LabeledFileCollection) -> Dict[Label, List[DestinationData]]:
 
@@ -127,13 +127,12 @@ class TerminationsDataLoader(DataLoader):
         return datasets
 
 
-class TerminationsDataProcessor(DataProcessor):
+class BasicDataProcessor(DataProcessor):
 
     def __init__(self, printer: CSVPrinter):
         self.printer = printer
 
     def process(self, datasets: Dict[Label, List[DestinationData]]):
-
         with self.printer:
             for label, dataset in datasets.items():
                 destination_count = len(dataset)
